@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ##
 # GENTOO QUICK INSTALLER
@@ -17,6 +17,25 @@
 # SSH_PUBLIC_KEY - ssh public key, pass contents of `cat ~/.ssh/id_rsa.pub` for example
 # ROOT_PASSWORD - root password, only SSH key-based authentication will work if not set
 ##
+
+# Sets up EFI
+# echo 'Is this an EFI computer? [Y/n]'
+# read
+# if [[ $REPLY =~ .*n.* ]]
+# then
+# EFI=false
+# else
+# EFI=true
+# fi
+
+echo 'Are you installing Gentoo on an NVMe drive? [Y/n]'
+read
+if [[ $REPLY =~ .*n.* ]]
+then
+NVME='p'
+else
+NVME=''
+fi
 
 set -e
 
@@ -58,25 +77,25 @@ END
 
 echo "### Formatting partitions..."
 
-yes | mkfs.ext4 ${TARGET_DISK}1
-yes | mkswap ${TARGET_DISK}2
-yes | mkfs.ext4 ${TARGET_DISK}3
+yes | mkfs.ext4 ${TARGET_DISK}${NVME}1
+yes | mkswap ${TARGET_DISK}${NVME}2
+yes | mkfs.ext4 ${TARGET_DISK}${NVME}3
 
 echo "### Labeling partitions..."
 
-e2label ${TARGET_DISK}1 boot
-swaplabel ${TARGET_DISK}2 -L swap
-e2label ${TARGET_DISK}3 root
+e2label ${TARGET_DISK}${NVME}1 boot
+swaplabel ${TARGET_DISK}${NVME}2 -L swap
+e2label ${TARGET_DISK}${NVME}3 root
 
 echo "### Mounting partitions..."
 
-swapon ${TARGET_DISK}2
+swapon ${TARGET_DISK}${NVME}2
 
 mkdir -p /mnt/gentoo
-mount ${TARGET_DISK}3 /mnt/gentoo
+mount ${TARGET_DISK}${NVME}3 /mnt/gentoo
 
 mkdir -p /mnt/gentoo/boot
-mount ${TARGET_DISK}1 /mnt/gentoo/boot
+mount ${TARGET_DISK}${NVME}1 /mnt/gentoo/boot
 
 echo "### Setting work directory..."
 
@@ -116,7 +135,6 @@ cp -v /etc/resolv.conf /mnt/gentoo/etc/
 echo "### Configuring fstab..."
 
 cat >> /mnt/gentoo/etc/fstab << END
-
 # added by gentoo installer
 LABEL=boot /boot ext4 noauto,noatime 1 2
 LABEL=swap none  swap sw             0 0
@@ -135,61 +153,40 @@ echo "### Changing root..."
 
 chroot /mnt/gentoo /bin/bash -s << END
 #!/bin/bash
-
 set -e
-
 echo "### Upading configuration..."
-
 env-update
 source /etc/profile
-
 echo "### Installing portage..."
-
 mkdir -p /etc/portage/repos.conf
 cp -f /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
 emerge-webrsync
-
 echo "### Installing kernel sources..."
-
 emerge sys-kernel/gentoo-sources
-
 if [ "$USE_LIVECD_KERNEL" = 0 ]; then
     echo "### Installing kernel..."
-
     echo "sys-kernel/genkernel -firmware" > /etc/portage/package.use/genkernel
     echo "sys-apps/util-linux static-libs" >> /etc/portage/package.use/genkernel
-
     emerge sys-kernel/genkernel
-
     genkernel all --kernel-config=$(find /etc/kernels -type f -iname 'kernel-config-*' | head -n 1)
 fi
-
 echo "### Installing bootloader..."
-
 emerge grub
-
 cat >> /etc/portage/make.conf << IEND
-
 # added by gentoo installer
 GRUB_PLATFORMS="$GRUB_PLATFORMS"
 IEND
-
 cat >> /etc/default/grub << IEND
-
 # added by gentoo installer
 GRUB_CMDLINE_LINUX="net.ifnames=0"
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
 IEND
-
 grub-install ${TARGET_DISK}
 grub-mkconfig -o /boot/grub/grub.cfg
-
 echo "### Configuring network..."
-
 ln -s /etc/init.d/net.lo /etc/init.d/net.eth0
 rc-update add net.eth0 default
-
 if [ -z "$ROOT_PASSWORD" ]; then
     echo "### Removing root password..."
     passwd -d -l root
@@ -197,12 +194,9 @@ else
     echo "### Configuring root password..."
     echo "root:$ROOT_PASSWORD" | chpasswd
 fi
-
 if [ -n "$SSH_PUBLIC_KEY" ]; then
     echo "### Configuring SSH..."
-
     rc-update add sshd default
-
     mkdir /root/.ssh
     touch /root/.ssh/authorized_keys
     chmod 750 /root/.ssh
