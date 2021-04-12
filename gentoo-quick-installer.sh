@@ -46,10 +46,7 @@ read
 
 cfdisk $TARGET_DISK
 
-# if [ $EFI = true ]
-# then
-# Put EFI Partition setup code here
-# else
+# [ EFI = true ] && echo 'What partition do you want to use as your ESP? (Only enter the number)' && read EFI_PART
 echo 'What partition do you want to use as your boot partition? (Only enter the number)'
 read BOOT_PART
 echo 'What partition do you want to use as your root partition? (Only enter the number)'
@@ -57,6 +54,8 @@ read ROOT_PART
 echo 'What partition do you want to use as your swap partition? (Only enter the number)'
 read SWAP_PART
 set -e
+
+
 
 GENTOO_MIRROR="http://distfiles.gentoo.org"
 
@@ -93,6 +92,7 @@ yes | mkfs.ext4 ${TARGET_DISK}${NVME}${ROOT_PART}
 
 echo "### Labeling partitions..."
 
+# [ EFI = true ] && e2label ${TARGET_DISK}${NVME}${EFI_PART} efi
 e2label ${TARGET_DISK}${NVME}${BOOT_PART} boot
 swaplabel ${TARGET_DISK}${NVME}${SWAP_PART} -L swap
 e2label ${TARGET_DISK}${NVME}${ROOT_PART} root
@@ -106,6 +106,9 @@ mount ${TARGET_DISK}${NVME}${ROOT_PART} /mnt/gentoo
 
 mkdir -p /mnt/gentoo/boot
 mount ${TARGET_DISK}${NVME}${BOOT_PART} /mnt/gentoo/boot
+
+# [ EFI = true ] && mkdir -p /mnt/gentoo/boot/efi && mount ${TARGET_DISK}${NVME}${EFI_PART} /mnt/gentoo/boot/efi
+
 
 echo "### Setting work directory..."
 
@@ -146,6 +149,7 @@ echo "### Configuring fstab..."
 
 cat >> /mnt/gentoo/etc/fstab << END
 # added by gentoo installer
+# LABEL=efi /boot/efi vfat defaults 0 1
 LABEL=boot /boot ext4 noauto,noatime 1 2
 LABEL=swap none  swap sw             0 0
 LABEL=root /     ext4 noatime        0 1
