@@ -12,20 +12,11 @@ Read more: http://www.artembutusov.com/gentoo-linux-quick-installer-script/
 
 ## Contribution
 
-For almost any change please consider doing a few tests below.
+To contribute to my project, DM me on Mastodon TheFreePenguin@fosstodon.org
 
-Images should be bootable and should allow to login using root password-auth or password-less auth via SSH.
-
-```shell
-# livecd kernel with root password
-USE_LIVECD_KERNEL=1 ROOT_PASSWORD=Gentoo123 ./gentoo-quick-installer.sh
-
-# Compiled kernel with ssh public key
-USE_LIVECD_KERNEL=0 SSH_PUBLIC_KEY=$(cat id_rsa.pub) ./gentoo-quick-installer.sh
-```
 
 ## Copyright
 
-gentoo-vbox-builder is licensed under the MIT.
+gentoo-vbox-builder-tfp is licensed under the GPL.
 
 A copy of this license is included in the file LICENSE.txt
