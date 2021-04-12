@@ -41,7 +41,7 @@ else
 NVME=''
 fi
 
-echo 'You don\'t need to format the partitions. The installer will do that for you. Press ENTER to continue'
+echo 'You do not need to format the partitions. The installer will do that for you. Press ENTER to continue'
 read
 
 cfdisk $TARGET_DISK
