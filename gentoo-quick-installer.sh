@@ -18,6 +18,7 @@
 # ROOT_PASSWORD - root password, only SSH key-based authentication will work if not set
 ##
 
+
 # Sets up EFI
 # echo 'Is this an EFI computer? [Y/n]'
 # read
@@ -28,6 +29,9 @@
 # EFI=true
 # fi
 
+echo 'Which disk do you want to install Gentoo onto?'
+read TARGET_DISK
+
 echo 'Are you installing Gentoo on an NVMe drive? [Y/n]'
 read
 if [[ $REPLY =~ .*n.* ]]
@@ -37,6 +41,21 @@ else
 NVME=''
 fi
 
+echo 'You don\'t need to format the partitions. The installer will do that for you. Press ENTER to continue'
+read
+
+cfdisk $TARGET_DISK
+
+# if [ $EFI = true ]
+# then
+# Put EFI Partition setup code here
+# else
+echo 'What partition do you want to use as your boot partition? (Only enter the number)'
+read BOOT_PART
+echo 'What partition do you want to use as your root partition? (Only enter the number)'
+read ROOT_PART
+echo 'What partition do you want to use as your swap partition? (Only enter the number)'
+read SWAP_PART
 set -e
 
 GENTOO_MIRROR="http://distfiles.gentoo.org"
@@ -44,7 +63,6 @@ GENTOO_MIRROR="http://distfiles.gentoo.org"
 GENTOO_ARCH="amd64"
 GENTOO_STAGE3="amd64"
 
-TARGET_DISK=/dev/sda
 
 TARGET_BOOT_SIZE=100M
 TARGET_SWAP_SIZE=1G
@@ -67,35 +85,27 @@ echo "### Setting time..."
 
 ntpd -gq
 
-echo "### Creating partitions..."
-
-sfdisk ${TARGET_DISK} << END
-size=$TARGET_BOOT_SIZE,bootable
-size=$TARGET_SWAP_SIZE
-;
-END
-
 echo "### Formatting partitions..."
 
-yes | mkfs.ext4 ${TARGET_DISK}${NVME}1
-yes | mkswap ${TARGET_DISK}${NVME}2
-yes | mkfs.ext4 ${TARGET_DISK}${NVME}3
+yes | mkfs.ext4 ${TARGET_DISK}${NVME}${BOOT_PART}
+yes | mkswap ${TARGET_DISK}${NVME}${SWAP_PART}
+yes | mkfs.ext4 ${TARGET_DISK}${NVME}${ROOT_PART}
 
 echo "### Labeling partitions..."
 
-e2label ${TARGET_DISK}${NVME}1 boot
-swaplabel ${TARGET_DISK}${NVME}2 -L swap
-e2label ${TARGET_DISK}${NVME}3 root
+e2label ${TARGET_DISK}${NVME}${BOOT_PART} boot
+swaplabel ${TARGET_DISK}${NVME}${SWAP_PART} -L swap
+e2label ${TARGET_DISK}${NVME}${ROOT_PART} root
 
 echo "### Mounting partitions..."
 
-swapon ${TARGET_DISK}${NVME}2
+swapon ${TARGET_DISK}${NVME}${SWAP_PART}
 
 mkdir -p /mnt/gentoo
-mount ${TARGET_DISK}${NVME}3 /mnt/gentoo
+mount ${TARGET_DISK}${NVME}${ROOT_PART} /mnt/gentoo
 
 mkdir -p /mnt/gentoo/boot
-mount ${TARGET_DISK}${NVME}1 /mnt/gentoo/boot
+mount ${TARGET_DISK}${NVME}${BOOT_PART} /mnt/gentoo/boot
 
 echo "### Setting work directory..."
 
