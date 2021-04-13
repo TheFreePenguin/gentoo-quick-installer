@@ -18,4 +18,4 @@ To contribute to my project, DM me on Mastodon TheFreePenguin@fosstodon.org
 
 gentoo-vbox-builder-tfp is licensed under the GPL. It has been relicensed since I don't want proprietary forks of my project.
 
-A copy of this license is included in the file LICENSE.txt
+A copy of this license is included in the file LICENSE.md
