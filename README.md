@@ -1,4 +1,4 @@
-# gentoo-quick-installer
+# gentoo-quick-installer-tfp
 
 ## About
 
