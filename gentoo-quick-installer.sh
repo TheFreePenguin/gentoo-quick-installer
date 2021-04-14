@@ -22,7 +22,7 @@
 # Sets up EFI
 echo 'Is this an EFI computer? [Y/n]'
 read
-if [[ $REPLY =~ .*n.* ]]
+if [[ $REPLY = n ]]
 then
 EFI=false
 else
@@ -34,7 +34,7 @@ read TARGET_DISK
 
 echo 'Are you installing Gentoo on an NVMe drive? [Y/n]'
 read
-if [[ $REPLY =~ .*n.* ]]
+if [[ $REPLY =~ n ]]
 then
 NVME='p'
 else
@@ -70,8 +70,7 @@ GRUB_PLATFORMS=pc
 
 USE_LIVECD_KERNEL=${USE_LIVECD_KERNEL:-1}
 
-SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY:-}
-ROOT_PASSWORD=${ROOT_PASSWORD:-}
+ROOT_PASSWORD=root
 
 echo "### Checking configuration..."
 
