@@ -34,7 +34,7 @@ read TARGET_DISK
 
 echo 'Are you installing Gentoo on an NVMe drive? [Y/n]'
 read
-if [[ $REPLY =~ n ]]
+if [ $REPLY = n ]
 then
 NVME='p'
 else
