@@ -18,11 +18,14 @@
 # ROOT_PASSWORD - root password, only SSH key-based authentication will work if not set
 ##
 
+echo 'Make sure you have wget installed. If you do not have wget installed, press ⎈C and install wget.'
+read
+# ⎈⌥⌦
 
 # Sets up EFI
 echo 'Is this an EFI computer? [Y/n]'
 read
-if [[ $REPLY = n ]]
+if [ $REPLY = n ]
 then
 EFI=false
 else
@@ -36,9 +39,9 @@ echo 'Are you installing Gentoo on an NVMe drive? [Y/n]'
 read
 if [ $REPLY = n ]
 then
-NVME='p'
-else
 NVME=''
+else
+NVME='p'
 fi
 
 echo 'You do not need to format the partitions. The installer will do that for you. Press ENTER to continue'
