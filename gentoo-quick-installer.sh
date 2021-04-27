@@ -128,15 +128,6 @@ tar xvpf "$(basename "$STAGE3_URL")" --xattrs-include='*.*' --numeric-owner
 
 rm -fv "$(basename "$STAGE3_URL")"
 
-if [ "$USE_LIVECD_KERNEL" != 0 ]; then
-    echo "### Installing LiveCD kernel..."
-
-    LIVECD_KERNEL_VERSION=$(cut -d " " -f 3 < /proc/version)
-
-    cp -v "/mnt/cdrom/boot/gentoo" "/mnt/gentoo/boot/vmlinuz-$LIVECD_KERNEL_VERSION"
-    cp -v "/mnt/cdrom/boot/gentoo.igz" "/mnt/gentoo/boot/initramfs-$LIVECD_KERNEL_VERSION.img"
-    cp -vR "/lib/modules/$LIVECD_KERNEL_VERSION" "/mnt/gentoo/lib/modules/"
-fi
 
 echo "### Installing kernel configuration..."
 
