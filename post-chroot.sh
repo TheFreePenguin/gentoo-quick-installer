@@ -49,7 +49,6 @@ if [ -n "$SSH_PUBLIC_KEY" ]; then
     chmod 640 /root/.ssh/authorized_keys
     echo "$SSH_PUBLIC_KEY" > /root/.ssh/authorized_keys
 fi
-END
 
 echo "### Rebooting..."
 
