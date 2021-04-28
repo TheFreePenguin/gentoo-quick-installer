@@ -128,6 +128,9 @@ tar xvpf "$(basename "$STAGE3_URL")" --xattrs-include='*.*' --numeric-owner
 
 rm -fv "$(basename "$STAGE3_URL")"
 
+echo "### Making kernel dir..."
+mkdir -p /etc/kernels
+cp /boot/*linu* /etc/kernels
 
 echo "### Installing kernel configuration..."
 
